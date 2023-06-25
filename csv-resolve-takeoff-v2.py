@@ -156,6 +156,7 @@ time_s_set = [item.total_seconds() for item in time_s_set]
 
 # PLOT ARE PRODUCED
 plt.figure(100)
+plt.xlabel("Time [s]")
 plt.plot(time_s_set, speed_set, label="Speed [m/s]")
 plt.plot(time_s_set, altitude_set, label="Altitude [m]")
 plt.legend()
@@ -190,9 +191,11 @@ plt.connect("button_press_event", on_click)
 plt.show()
 
 plt.figure(200)
-plt.plot(time_s_set, accel_z_set, label="Acceleration - z axis [g]")
-plt.plot(time_s_set, accel_y_set, label="Acceleration - y axis [g]")
-plt.plot(time_s_set, accel_x_set, label="Acceleration - x axis [g]")
+plt.xlabel("Time [s]")
+plt.ylabel("Acceleration [g]")
+plt.plot(time_s_set, accel_z_set, label="z axis")
+plt.plot(time_s_set, accel_y_set, label="y axis")
+plt.plot(time_s_set, accel_x_set, label="x axis")
 plt.legend()
 plt.axvline(x=to_start_time, color="g")
 plt.axvline(x=to_rotate_time, color="r")
@@ -270,24 +273,76 @@ def to_resulting_force(step):
     plt.legend()
 
 
+# Risulta che mediando ogni intervallino si ha la stessa curva della funzione precedente
+def to_resulting_force_v2(step):
+    F_net = []
+    F_avg = 0
+    v_avg = 0
+    v_axis = []
+    prev_v = -1
+    for index in range(to_start_index, to_rotate_index + 1):
+        v = speed_set[index]
+        v_avg = v_avg + v
+
+        if prev_v != -1:
+            F_avg = F_avg + (mass * (v - prev_v) / (0.1))
+
+        if (index - to_start_index) % step == 0:
+            F_net.append(F_avg / step)
+            v_axis.append(v_avg / step)
+            F_avg = 0
+            v_avg = 0
+
+        prev_v = v
+
+    T_a = [thrust_P_WT(v) for v in v_axis]
+
+    plt.plot(v_axis, T_a, label="Wind tunnel")
+    plt.plot(v_axis, F_net, label="GPS (step = " + str(step) + "): ")
+    plt.legend()
+
+
 # PROVVISORIA
 # Controllare asse (x o y) accelerometro e segno
 def to_resulting_force_acc():
     F_net = []
     v_axis = []
-    acc = accel_x_set[to_start_index]
+    acc = -accel_x_set[to_start_index]
     for index in range(to_start_index, to_rotate_index + 1):
         v = speed_set[index]
-        acc = acc * (0.85) + accel_x_set[index] * 0.15
+        acc = acc * (0.85) - accel_x_set[index] * 0.15
 
         F_i = mass * acc * 9.81
         F_net.append(F_i)
         v_axis.append(v)
 
-    T_a = [thrust_P_WT(v) for v in v_axis]
+    # T_a = [thrust_P_WT(v) for v in v_axis]
 
-    plt.plot(v_axis, F_net, label="Net force [N]: ")
-    plt.plot(v_axis, T_a, label="Thrust force [N]")
+    plt.plot(v_axis, F_net, label="Accelerometer [N]: ")
+    # plt.plot(v_axis, T_a, label="Thrust force [N]")
+    plt.legend()
+
+
+def to_resulting_force_acc_v2(step):
+    F_net = []
+    acc_avg = 0
+    v_avg = 0
+    v_axis = []
+    for index in range(to_start_index, to_rotate_index + 1):
+        v_avg = v_avg + speed_set[index]
+        acc_avg = acc_avg + -accel_x_set[index]
+
+        if (index - to_start_index) % step == 0:
+            F_net.append(mass * (acc_avg / step) * 9.81)
+            v_axis.append(v_avg / step)
+            acc_avg = 0
+            v_avg = 0
+
+    plt.plot(
+        v_axis,
+        F_net,
+        label="Accelerometer (step = " + str(step) + "): ",
+    )
     plt.legend()
 
 
@@ -306,8 +361,10 @@ to_speed_estimate(5)
 print("Real takeoff speed: " + str(to_speed))
 
 plt.figure(101)
-to_resulting_force(5)
-to_resulting_force_acc()
+plt.ylabel("Thrust [N]")
+plt.xlabel("Speed [m/s]")
+to_resulting_force_v2(5)
+to_resulting_force_acc_v2(5)
 plt.xlim([0, speed_set[to_rotate_index]])
 plt.ylim([0, 15])
 plt.show()
