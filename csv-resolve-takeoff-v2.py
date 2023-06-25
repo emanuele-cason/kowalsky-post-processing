@@ -270,6 +270,27 @@ def to_resulting_force(step):
     plt.legend()
 
 
+# PROVVISORIA
+# Controllare asse (x o y) accelerometro e segno
+def to_resulting_force_acc():
+    F_net = []
+    v_axis = []
+    acc = accel_x_set[to_start_index]
+    for index in range(to_start_index, to_rotate_index + 1):
+        v = speed_set[index]
+        acc = acc * (0.85) + accel_x_set[index] * 0.15
+
+        F_i = mass * acc * 9.81
+        F_net.append(F_i)
+        v_axis.append(v)
+
+    T_a = [thrust_P_WT(v) for v in v_axis]
+
+    plt.plot(v_axis, F_net, label="Net force [N]: ")
+    plt.plot(v_axis, T_a, label="Thrust force [N]")
+    plt.legend()
+
+
 to_distance_estimate(1)
 to_distance_estimate(2)
 to_distance_estimate(3)
@@ -285,9 +306,8 @@ to_speed_estimate(5)
 print("Real takeoff speed: " + str(to_speed))
 
 plt.figure(101)
-to_resulting_force(3)
-to_resulting_force(4)
 to_resulting_force(5)
+to_resulting_force_acc()
 plt.xlim([0, speed_set[to_rotate_index]])
 plt.ylim([0, 15])
 plt.show()

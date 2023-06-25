@@ -24,7 +24,18 @@ max_P_shaft = polyval(coeff_P_shaft, max_RPM);
 coeff_P_prop = coeff_eta_prop .* max_P_shaft;
 v = linspace(0, 30, 100);
 plot(v, polyval(coeff_P_prop, v));
-axis([0 35 0 300])
+legend('Wind tunnel (fit)', 'Wind tunnel (dati)' ,'Previsione eCalc');
+axis([0 31 0 200])
+
+%% CALCOLO ERRORE
+T_A = [0 13.63 13.12 12.46 11.84 11.08 10.20 9.358 8.517 7.567 6.689 5.775 4.789];
+v_A = [0 5 7 9 11 13 15 17 19 21 23 25 27];
+P_A = T_A.*v_A;
+err_rel = abs(P_A - polyval(coeff_P_prop, v_A))./(P_A);
+
+yyaxis right;
+plot(v_A, err_rel);
+ylabel('Relative error');
 
 poly2sym(coeff_P_prop) % In output la funzione simbolica - attenzione al range di plot!
 
