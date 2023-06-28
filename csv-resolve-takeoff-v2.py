@@ -297,8 +297,8 @@ def to_resulting_force_v2(step):
 
     T_a = [thrust_P_WT(v) for v in v_axis]
 
-    plt.plot(v_axis, T_a, label="Wind tunnel")
-    plt.plot(v_axis, F_net, label="GPS (step = " + str(step) + "): ")
+    plt.plot(v_axis, T_a, label="T - Wind tunnel")
+    plt.plot(v_axis, F_net, label="R - GPS (step = " + str(step) + "): ")
     plt.legend()
 
 
@@ -330,10 +330,10 @@ def to_resulting_force_acc_v2(step):
     v_axis = []
     for index in range(to_start_index, to_rotate_index + 1):
         v_avg = v_avg + speed_set[index]
-        acc_avg = acc_avg + -accel_x_set[index]
+        acc_avg = acc_avg + accel_x_set[index]
 
         if (index - to_start_index) % step == 0:
-            F_net.append(mass * (acc_avg / step) * 9.81)
+            F_net.append(mass * (acc_avg / step) * 9.806)
             v_axis.append(v_avg / step)
             acc_avg = 0
             v_avg = 0
@@ -341,7 +341,7 @@ def to_resulting_force_acc_v2(step):
     plt.plot(
         v_axis,
         F_net,
-        label="Accelerometer (step = " + str(step) + "): ",
+        label="R - Accelerometer (step = " + str(step) + "): ",
     )
     plt.legend()
 
@@ -361,7 +361,7 @@ to_speed_estimate(5)
 print("Real takeoff speed: " + str(to_speed))
 
 plt.figure(101)
-plt.ylabel("Thrust [N]")
+plt.ylabel("Force [N]")
 plt.xlabel("Speed [m/s]")
 to_resulting_force_v2(5)
 to_resulting_force_acc_v2(5)
